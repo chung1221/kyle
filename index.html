@@ -10,28 +10,41 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f9f9f9;
+            background-image: url('https://dummyimage.com/1920x1080/000/fff&text=Taipei+101');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
 
         header {
-            background-color: #333;
+            background-color: rgba(0, 0, 0, 0.7);
             color: white;
             text-align: center;
-            padding: 20px;
+            padding: 40px 0;
         }
 
         .container {
             max-width: 1200px;
             margin: 20px auto;
             padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
         }
 
         .section {
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.9);
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
             padding: 20px;
+            width: calc(50% - 10px);
+        }
+
+        @media (max-width: 768px) {
+            .section {
+                width: 100%;
+            }
         }
 
         h2 {
@@ -95,6 +108,17 @@
             height: 200px;
             border-radius: 50%;
             object-fit: cover;
+            margin-bottom: 10px;
+            display: block;
+            margin: 0 auto 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
             margin-bottom: 10px;
         }
     </style>
@@ -182,6 +206,50 @@
         </div>
     </div>
     <script>
+        // 页面加载时从 localStorage 加载图片
+        window.onload = function () {
+            const profileImage = localStorage.getItem('profileImage');
+            if (profileImage) {
+                document.getElementById('profile-image').src = profileImage;
+            }
+
+            const saleProperties = JSON.parse(localStorage.getItem('saleProperties')) || [];
+            const saleContainer = document.getElementById('sale-properties');
+            saleContainer.innerHTML = '';
+            saleProperties.forEach((property) => {
+                const card = document.createElement('div');
+                card.className = 'property-card';
+                card.innerHTML = `
+                    <img src="${property.image}" alt="${property.name}">
+                    <div class="property-details">
+                        <h3>${property.name}</h3>
+                        <p>價格：${property.price}</p>
+                        <p>地址：${property.address}</p>
+                        <button onclick="updateSaleImage(this)">修改照片</button>
+                    </div>
+                `;
+                saleContainer.appendChild(card);
+            });
+
+            const rentProperties = JSON.parse(localStorage.getItem('rentProperties')) || [];
+            const rentContainer = document.getElementById('rent-properties');
+            rentContainer.innerHTML = '';
+            rentProperties.forEach((property) => {
+                const card = document.createElement('div');
+                card.className = 'property-card';
+                card.innerHTML = `
+                    <img src="${property.image}" alt="${property.name}">
+                    <div class="property-details">
+                        <h3>${property.name}</h3>
+                        <p>租金：${property.price}</p>
+                        <p>地址：${property.address}</p>
+                        <button onclick="updateRentImage(this)">修改照片</button>
+                    </div>
+                `;
+                rentContainer.appendChild(card);
+            });
+        };
+
         function addSaleProperty() {
             const name = document.getElementById('new-sale-name').value;
             const price = document.getElementById('new-sale-price').value;
@@ -192,11 +260,13 @@
                 const container = document.getElementById('sale-properties');
                 const card = document.createElement('div');
                 card.className = 'property-card';
+                let imageSrc = 'https://dummyimage.com/600x400/000/fff';
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = function (e) {
+                        imageSrc = e.target.result;
                         card.innerHTML = `
-                            <img src="${e.target.result}" alt="${name}">
+                            <img src="${imageSrc}" alt="${name}">
                             <div class="property-details">
                                 <h3>${name}</h3>
                                 <p>價格：${price}</p>
@@ -205,11 +275,12 @@
                             </div>
                         `;
                         container.appendChild(card);
+                        saveSaleProperties();
                     };
                     reader.readAsDataURL(file);
                 } else {
                     card.innerHTML = `
-                        <img src="https://dummyimage.com/600x400/000/fff" alt="${name}">
+                        <img src="${imageSrc}" alt="${name}">
                         <div class="property-details">
                             <h3>${name}</h3>
                             <p>價格：${price}</p>
@@ -218,6 +289,7 @@
                         </div>
                     `;
                     container.appendChild(card);
+                    saveSaleProperties();
                 }
                 document.getElementById('new-sale-name').value = '';
                 document.getElementById('new-sale-price').value = '';
@@ -236,11 +308,13 @@
                 const container = document.getElementById('rent-properties');
                 const card = document.createElement('div');
                 card.className = 'property-card';
+                let imageSrc = 'https://dummyimage.com/600x400/000/fff';
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = function (e) {
+                        imageSrc = e.target.result;
                         card.innerHTML = `
-                            <img src="${e.target.result}" alt="${name}">
+                            <img src="${imageSrc}" alt="${name}">
                             <div class="property-details">
                                 <h3>${name}</h3>
                                 <p>租金：${price}</p>
@@ -249,11 +323,12 @@
                             </div>
                         `;
                         container.appendChild(card);
+                        saveRentProperties();
                     };
                     reader.readAsDataURL(file);
                 } else {
                     card.innerHTML = `
-                        <img src="https://dummyimage.com/600x400/000/fff" alt="${name}">
+                        <img src="${imageSrc}" alt="${name}">
                         <div class="property-details">
                             <h3>${name}</h3>
                             <p>租金：${price}</p>
@@ -262,6 +337,7 @@
                         </div>
                     `;
                     container.appendChild(card);
+                    saveRentProperties();
                 }
                 document.getElementById('new-rent-name').value = '';
                 document.getElementById('new-rent-price').value = '';
@@ -281,6 +357,7 @@
                     reader.onload = function (e) {
                         const img = button.parentNode.previousElementSibling;
                         img.src = e.target.result;
+                        saveSaleProperties();
                     };
                     reader.readAsDataURL(file);
                 }
@@ -299,6 +376,7 @@
                     reader.onload = function (e) {
                         const img = button.parentNode.previousElementSibling;
                         img.src = e.target.result;
+                        saveRentProperties();
                     };
                     reader.readAsDataURL(file);
                 }
@@ -317,11 +395,48 @@
                     reader.onload = function (e) {
                         const img = document.getElementById('profile-image');
                         img.src = e.target.result;
+                        localStorage.setItem('profileImage', e.target.result);
                     };
                     reader.readAsDataURL(file);
                 }
             };
             input.click();
+        }
+
+        function saveSaleProperties() {
+            const saleProperties = [];
+            const saleCards = document.querySelectorAll('#sale-properties .property-card');
+            saleCards.forEach((card) => {
+                const img = card.querySelector('img');
+                const h3 = card.querySelector('h3');
+                const price = card.querySelector('p:nth-child(2)').textContent.split('：')[1];
+                const address = card.querySelector('p:nth-child(3)').textContent.split('：')[1];
+                saleProperties.push({
+                    name: h3.textContent,
+                    price: price,
+                    address: address,
+                    image: img.src
+                });
+            });
+            localStorage.setItem('saleProperties', JSON.stringify(saleProperties));
+        }
+
+        function saveRentProperties() {
+            const rentProperties = [];
+            const rentCards = document.querySelectorAll('#rent-properties .property-card');
+            rentCards.forEach((card) => {
+                const img = card.querySelector('img');
+                const h3 = card.querySelector('h3');
+                const price = card.querySelector('p:nth-child(2)').textContent.split('：')[1];
+                const address = card.querySelector('p:nth-child(3)').textContent.split('：')[1];
+                rentProperties.push({
+                    name: h3.textContent,
+                    price: price,
+                    address: address,
+                    image: img.src
+                });
+            });
+            localStorage.setItem('rentProperties', JSON.stringify(rentProperties));
         }
     </script>
 </body>
